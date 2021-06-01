@@ -1,7 +1,12 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>{% block title %} Welcome to FlaskBlog, {{ user.username }} {% endblock %}</h1>
+    <h1>{% block title %} Welcome to FlaskBlog, 
+    {% if current_user.username %}
+	router ospf 1
+	{% else %}
+	switchport trunk allowed vlan
+	{% endif %}{% endblock %}</h1>
     {% for post in posts %}
         <a href="{{ url_for('post', post_id=post['id']) }}">
             <h2>{{ post.title }}</h2>

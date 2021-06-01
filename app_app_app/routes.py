@@ -25,6 +25,7 @@ def get_post(post_id):
 
 
 @app.route('/')
+@app.route('/index')
 def index():
     conn = get_db_connection()
     posts = conn.execute('SELECT * FROM posts').fetchall()
