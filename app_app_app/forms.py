@@ -21,14 +21,16 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Register')
 
     def validate_username(self, username):
-        print('!!!!!!!!!', User.query.filter_by(username=username.data))
-        # if user is not None:
-        #     raise ValidationError('Please use a different username.')
+        # print('!!!!!!!!!', User.query.filter_by(username=username.data))
+        # user = User.query.filter_by(username=username.data)
+        user = User.query.filter_by(username=username.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different username.')
 
     def validate_email(self, email):
         print('@@@@@@@@', User.query.filter_by(email=email.data))
-        user = User.query.filter_by(email=email.data)
+        # user = User.query.filter_by(email=email.data)
         # print('################', User.query.filter_by(email=email.data).first())
-        # user = User.query.filter_by(email=email.data).first()
+        user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError('Please use a different email address.')
