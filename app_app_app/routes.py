@@ -1,9 +1,10 @@
 import sqlite3
+from datetime import datetime
 from app_app_app import app, db
 from app_app_app.model import User
 from werkzeug.urls import url_parse
 from werkzeug.exceptions import abort
-from app_app_app.forms import LoginForm, RegistrationForm
+from app_app_app.forms import LoginForm, RegistrationForm, EditProfileForm
 from flask import render_template, request, url_for, flash, redirect
 from flask_login import current_user, login_user, logout_user, login_required
 #####
@@ -87,6 +88,16 @@ def delete(id):
     flash('"{}" was successfully deleted!'.format(post['title']))
     return redirect(url_for('index'))
 
+@app.route('/user/<username>')
+@login_required
+def user(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    posts = [
+        {'author': user, 'body': 'Test post #1'},
+        {'author': user, 'body': 'Test post #2'}
+    ]
+    return render_template('user.html', user=user, posts=posts)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -127,12 +138,25 @@ def register():
     return render_template('register.html', title='Register', form=form)
 
 
-@app.route('/user/<username>')
+@app.before_request
+def before_request():
+    if current_user.is_authenticated:
+        current_user.last_seen = datetime.utcnow()
+        db.session.commit()
+
+
+@app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
-def user(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    posts = [
-        {'author': user, 'body': 'Test post #1'},
-        {'author': user, 'body': 'Test post #2'}
-    ]
-    return render_template('user.html', user=user, posts=posts)
+def edit_profile():
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        current_user.username = form.username.data
+        current_user.about_me = form.about_me.data
+        db.session.commit()
+        flash('Your changes have been saved.')
+        return redirect(url_for('edit_profile'))
+    elif request.method == 'GET':
+        form.username.data = current_user.username
+        form.about_me.data = current_user.about_me
+    return render_template('edit_profile.html', title='Edit Profile',
+                           form=form)
